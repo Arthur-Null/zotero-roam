@@ -654,11 +654,11 @@ function parseNoteBlock(block: string): string {
 		"<br>": "\n",
 		"<u>": "",
 		"</u>": "",
-		"<ul>": "",
-		"</ul>": "",
-		"<ol>": "",
-		"</ol>": "",
-		"</li><li>": " ",
+		"<ul>": "\n",
+		"</ul>": "\n",
+		"<ol>": "\n",
+		"</ol>": "\n",
+		"</li><li>": "\n",
 		"<li>": "",
 		"</li>": ""
 	};

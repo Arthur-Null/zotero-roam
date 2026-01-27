@@ -1,6 +1,20 @@
 ## Changelog
 
-### [0.7.22](https://github.com/alixlahuec/zotero-roam/compare/0.7.21...0.7.22) - 
+### [0.7.23](https://github.com/alixlahuec/zotero-roam/compare/0.7.22...0.7.23) - 2026-01-26
+
+#### Security
+
+- update axios to v1.8.2 (security fix)
+- update vite to v5.4.19 (security fix)
+- update msw to v2.12.7
+
+#### Bug Fixes
+
+- add publication year to default metadata template ([#23](https://github.com/alixlahuec/zotero-roam/issues/23))
+- fix bullet point formatting in notes import ([#26](https://github.com/alixlahuec/zotero-roam/issues/26))
+- add authors/editors conditional option ([#19](https://github.com/alixlahuec/zotero-roam/issues/19))
+
+### [0.7.22](https://github.com/alixlahuec/zotero-roam/compare/0.7.21...0.7.22) -
 
 #### Features
 
