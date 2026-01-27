@@ -1,6 +1,7 @@
 module.exports = {
 	"hooks": {
 		"after:bump": [
+			"sed -i.bak 's|shields.io/maintenance/yes/[0-9]\\{4\\}|shields.io/maintenance/yes/'$(date +%Y)'|' README.md && rm README.md.bak",
 			"npm run build:prod",
 			"npm run build:roam",
 			"npm run build:sandbox"

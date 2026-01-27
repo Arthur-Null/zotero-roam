@@ -1,19 +1,34 @@
 # Zotero-Roam Fork Review
 
 **Review Date:** 2026-01-08
+**Last Updated:** 2026-01-26
 **Original Repository:** https://github.com/alixlahuec/zotero-roam
-**Current Version:** 0.7.22
+**Current Version:** 0.7.23
 
 ## Executive Summary
 
 This review analyzes 14 open issues and 7 open pull requests from the original repository to identify opportunities for improvement in your fork.
 
+### Completion Status (as of v0.7.23)
+
+**✅ Completed (5 items):**
+- Security PRs: #789 (axios), #788 (vite)
+- Easy Wins: #23 (year in metadata), #26 (bullet formatting), #19 (authors/editors)
+
+**❌ Outstanding (Critical):**
+- Issue #790: Settings loss in shared graphs (HIGH PRIORITY)
+- Issue #793: Recent metadata import failures
+- Citation Key Compatibility for Zotero 7
+- Performance optimization for large databases
+
+**Progress: ~23% of identified items completed**
+
 ### Priority Issues Identified
 
-1. **Critical Bug (#790)**: Settings loss in shared graphs - HIGH PRIORITY
-2. **Citation Key Compatibility**: Better BibTeX integration needs updating
-3. **Performance**: Large database freezing issues
-4. **Recent Bug (#793)**: Metadata import failures
+1. **Critical Bug (#790)**: Settings loss in shared graphs - HIGH PRIORITY ❌
+2. **Citation Key Compatibility**: Better BibTeX integration needs updating ❌
+3. **Performance**: Large database freezing issues ❌
+4. **Recent Bug (#793)**: Metadata import failures ❌
 
 ---
 
@@ -21,16 +36,16 @@ This review analyzes 14 open issues and 7 open pull requests from the original r
 
 ### 🔴 Security PRs (RECOMMEND MERGING)
 
-**#789 - Update axios to v1.8.2 [SECURITY]**
-- **Status:** Open since Jun 24, 2025
+**#789 - Update axios to v1.8.2 [SECURITY]** ✅ **COMPLETED**
+- **Status:** ~~Open since Jun 24, 2025~~ **MERGED in v0.7.23 (commit 572d611)**
 - **Impact:** Security vulnerability in axios dependency
-- **Recommendation:** **MERGE IMMEDIATELY**
+- **Recommendation:** ~~**MERGE IMMEDIATELY**~~ **COMPLETED**
 - **Effort:** Minimal - dependency update
 
-**#788 - Update vite to v5.4.19 [SECURITY]**
-- **Status:** Open since Jun 24, 2025
+**#788 - Update vite to v5.4.19 [SECURITY]** ✅ **COMPLETED**
+- **Status:** ~~Open since Jun 24, 2025~~ **MERGED in v0.7.23 (commit 572d611)**
 - **Impact:** Security vulnerability in build tooling
-- **Recommendation:** **MERGE IMMEDIATELY**
+- **Recommendation:** ~~**MERGE IMMEDIATELY**~~ **COMPLETED**
 - **Effort:** Minimal - dependency update
 
 **#792 - Update storybook to v8.6.15 [SECURITY]**
@@ -229,25 +244,16 @@ if (item.data.extra.includes("Citation Key: ")) {
 
 ## Easy Win Issues
 
-### ✅ Issue #23: Include Year in Default Metadata Format
-**Effort:** LOW | **Impact:** MEDIUM
+### ✅ Issue #23: Include Year in Default Metadata Format - **COMPLETED**
+**Effort:** LOW | **Impact:** MEDIUM | **Status:** ✅ Merged in v0.7.23
 
-Users want publication year in default metadata template. This is a simple template string change in `src/setup.ts:188-304` (setupInitialSettings defaults).
+Users want publication year in default metadata template. ~~This is a simple template string change in `src/setup.ts:188-304` (setupInitialSettings defaults).~~
 
-**Current relevant code:**
-```typescript
-metadata: {
-	func: "",
-	smartblock: {
-		param: "srcUid",
-		paramValue: ""
-	},
-	use: "default",
-	...metadata
-}
-```
-
-**Action:** Review default metadata formatter and add year field.
+**Implementation (commit 572d611):**
+- Added new `getItemYear()` function in `src/api/helpers.ts:295-304`
+- Extracts year from `item.meta.parsedDate` using `Date.getUTCFullYear()`
+- Integrated into default metadata at `src/api/helpers.ts:64-65`
+- Format: `Year:: YYYY`
 
 ---
 
@@ -264,17 +270,30 @@ Currently metadata import is one-by-one. Adding batch import would significantly
 
 ---
 
-### ✅ Issue #26: Notes Import Formatting of Bullets
-**Effort:** LOW-MEDIUM | **Impact:** MEDIUM
+### ✅ Issue #26: Notes Import Formatting of Bullets - **COMPLETED**
+**Effort:** LOW-MEDIUM | **Impact:** MEDIUM | **Status:** ✅ Merged in v0.7.23
 
-Bullet point formatting issues when importing notes. Review `src/api/helpers.ts` (`formatNotes` function) and ensure proper HTML → Roam markdown conversion.
+Bullet point formatting issues when importing notes. ~~Review `src/api/helpers.ts` (`formatNotes` function) and ensure proper HTML → Roam markdown conversion.~~
+
+**Implementation (commit 572d611):**
+- Updated `parseNoteBlock()` function in `src/utils.ts:657-663`
+- Changed HTML list tag replacements from empty strings to newlines
+- `<ul>`, `</ul>`, `<ol>`, `</ol>` now insert `\n`
+- `</li><li>` changed from space to `\n` for proper bullet separation
 
 ---
 
-### ✅ Issue #19: Add Authors/Editors Script
-**Effort:** LOW | **Impact:** LOW-MEDIUM
+### ✅ Issue #19: Add Authors/Editors Script - **COMPLETED**
+**Effort:** LOW | **Impact:** LOW-MEDIUM | **Status:** ✅ Merged in v0.7.23
 
-Users want metadata option for "authors, or editors if no authors". This is a simple conditional in the metadata formatter.
+Users want metadata option for "authors, or editors if no authors". ~~This is a simple conditional in the metadata formatter.~~
+
+**Implementation (commit 572d611):**
+- Added `authors_or_editors` parameter to `getItemCreators()` in `src/api/helpers.ts:187`
+- Logic at lines 191-201 filters creators appropriately:
+  - If `authors_or_editors` is true, shows only authors
+  - If no authors exist, falls back to editors
+  - Maintains backward compatibility (default: false)
 
 ---
 
@@ -356,16 +375,16 @@ Users want metadata option for "authors, or editors if no authors". This is a si
 ## Recommended Priority Order
 
 ### Phase 1: Critical Fixes (Week 1-2)
-1. ✅ Merge security PRs (#789, #788)
-2. ✅ Fix Issue #790 (settings loss)
-3. ✅ Setup test Zotero account and environment
-4. ✅ Reproduce and fix Issue #793 (metadata import)
+1. ✅ **COMPLETED** - Merge security PRs (#789, #788) - v0.7.23
+2. ❌ **PENDING** - Fix Issue #790 (settings loss)
+3. ❌ **PENDING** - Setup test Zotero account and environment
+4. ❌ **PENDING** - Reproduce and fix Issue #793 (metadata import)
 
 ### Phase 2: Core Improvements (Week 3-4)
-1. ✅ Update citation key handling for Zotero 7
-2. ✅ Add performance monitoring/logging
-3. ✅ Implement easy wins (#23, #26, #19)
-4. ✅ Add batch import (#550)
+1. ❌ **PENDING** - Update citation key handling for Zotero 7
+2. ❌ **PENDING** - Add performance monitoring/logging
+3. ✅ **COMPLETED** - Implement easy wins (#23, #26, #19) - v0.7.23
+4. ❌ **PENDING** - Add batch import (#550)
 
 ### Phase 3: Performance & Features (Week 5-6)
 1. ✅ Optimize large database handling
@@ -420,13 +439,13 @@ Users want metadata option for "authors, or editors if no authors". This is a si
 ## Conclusion
 
 **Worth Bringing Over:**
-- ✅ Security PRs (#789, #788) - immediate merge
-- 🤔 Explorer refactor (#702) - evaluate after completing Phase 1-2
+- ✅ **COMPLETED** - Security PRs (#789, #788) - merged in v0.7.23
+- 🤔 **PENDING** - Explorer refactor (#702) - evaluate after completing Phase 1-2
 
 **Easy Wins:**
-- Issue #23 (year in metadata)
-- Issue #26 (bullet formatting)
-- Issue #19 (authors/editors)
+- ✅ **COMPLETED** - Issue #23 (year in metadata) - v0.7.23
+- ✅ **COMPLETED** - Issue #26 (bullet formatting) - v0.7.23
+- ✅ **COMPLETED** - Issue #19 (authors/editors) - v0.7.23
 
 **Critical Focus:**
 - Issue #790 (settings loss) - affects user trust
@@ -438,9 +457,27 @@ Users want metadata option for "authors, or editors if no authors". This is a si
 Yes, you should create a Zotero test account. The free tier is sufficient for testing, and proper integration testing is essential for this extension.
 
 **Estimated Effort:**
-- Phase 1 (Critical): 20-30 hours
-- Phase 2 (Core): 30-40 hours
+- ~~Phase 1 (Critical): 20-30 hours~~ **In Progress: 2/4 items complete**
+- Phase 2 (Core): 30-40 hours (1/4 items complete)
 - Phase 3 (Performance): 40-50 hours
 - Phase 4 (Polish): Ongoing
 
-This is a well-architected extension with good bones. The main issues are edge cases (#790), potential API compatibility (#793, citation keys), and performance optimization for power users. The security updates should be merged immediately, and Issue #790 should be your top priority as it affects user trust in the extension.
+---
+
+## Update: v0.7.23 Release (2026-01-26)
+
+**Completed in this release:**
+- ✅ Security updates: axios v1.8.2, vite v5.4.19
+- ✅ Added publication year to metadata template
+- ✅ Fixed bullet point formatting in notes import
+- ✅ Added authors/editors conditional logic
+
+**Next Priority Items:**
+1. **Issue #790** (settings loss) - Critical bug affecting user trust
+2. **Issue #793** (metadata import failures) - Actively broken functionality
+3. Setup Zotero test environment for comprehensive testing
+4. Citation key compatibility research for Zotero 7
+
+---
+
+This is a well-architected extension with good bones. The main issues are edge cases (#790), potential API compatibility (#793, citation keys), and performance optimization for power users. ~~The security updates should be merged immediately, and~~ Issue #790 should be your top priority as it affects user trust in the extension.
