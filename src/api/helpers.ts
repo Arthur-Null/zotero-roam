@@ -61,6 +61,8 @@ function formatItemMetadata(
 	if (item.data.abstractNote) { metadata.push(`Abstract:: ${item.data.abstractNote}`); } // Abstract, if available
 	if (item.data.itemType) { metadata.push(`Type:: ${getItemType(item, { brackets: true }, { typemap })}`); } // Item type, according to typemap
 	metadata.push(`Publication:: ${getItemPublication(item, { brackets: true })}`);
+	const year = getItemYear(item);
+	if (year) { metadata.push(`Year:: ${year}`); } // Publication year, if available
 	if (item.data.url) { metadata.push(`URL : ${item.data.url}`); }
 	if (item.data.dateAdded) { metadata.push(`Date Added:: ${getItemDateAdded(item)}`); } // Date added, as Daily Notes Page reference
 	metadata.push(`Zotero links:: ${getItemLink(item, "local", { format: "markdown", text: "Local library" })}, ${getItemLink(item, "web", { format: "markdown", text: "Web library" })}`); // Local + Web links to the item
@@ -182,11 +184,24 @@ function formatPDFs(pdfs: ZItemAttachment[], as: PDFFormatOption = "string"): st
 
 
 type CreatorAsIdentity = { inGraph: string | boolean, name: string, type: ZoteroAPI.CreatorType };
-type CreatorOptions = { brackets: boolean | "existing", return_as: "array" | "identity" | "string", use_type: boolean };
+type CreatorOptions = { brackets: boolean | "existing", return_as: "array" | "identity" | "string", use_type: boolean, authors_or_editors: boolean };
 
 /** Retrieves the creators list of a Zotero item, and returns it into a specific format */
-function getItemCreators(item: ZItemTop, { return_as = "string", brackets = true, use_type = true }: Partial<CreatorOptions> = {}): string | string[] | CreatorAsIdentity[] {
-	const creatorsInfoList = item.data.creators.map(creator => {
+function getItemCreators(item: ZItemTop, { return_as = "string", brackets = true, use_type = true, authors_or_editors = false }: Partial<CreatorOptions> = {}): string | string[] | CreatorAsIdentity[] {
+	let creatorsToUse = item.data.creators;
+
+	// If authors_or_editors is true, filter to show only authors OR editors (if no authors)
+	if (authors_or_editors) {
+		const authors = item.data.creators.filter(c => c.creatorType === "author");
+		if (authors.length > 0) {
+			creatorsToUse = authors;
+		} else {
+			const editors = item.data.creators.filter(c => c.creatorType === "editor");
+			creatorsToUse = editors;
+		}
+	}
+
+	const creatorsInfoList = creatorsToUse.map(creator => {
 		const nameTag = "name" in creator
 			? creator.name
 			: `${[creator.firstName, creator.lastName].filter(AsBoolean).join(" ")}`;
@@ -277,6 +292,18 @@ function getItemType(item: ZItemTop, { brackets = true }: { brackets?: boolean }
 	return (brackets == true ? `[[${type}]]` : type);
 }
 
+/** Retrieves the publication year for a given item */
+function getItemYear(item: ZItemTop): string {
+	if (!item.meta.parsedDate) {
+		return "";
+	}
+	const dateObj = new Date(item.meta.parsedDate);
+	if (isNaN(Number(dateObj))) {
+		return "";
+	}
+	return dateObj.getUTCFullYear().toString();
+}
+
 
 /** Groups a list of citekeys by the library they belong to. */
 function groupCitekeysByLibrary(citekeys: string[], { items }: { items: ZItem[] }) {
@@ -308,5 +335,6 @@ export {
 	getItemPublication,
 	getItemTags,
 	getItemType,
+	getItemYear,
 	groupCitekeysByLibrary
 };
