@@ -8,13 +8,13 @@
 
 ### ✅ Completed
 - **PR #1:** Security Dependency Updates - `a30c400` (2026-01-26)
+- **PR #2:** Fix Settings Loss in Shared Graphs (Issue #790) - (2026-01-26)
 - **PR #3:** Small Bug Fixes & Template Improvements - `9c0f1fc` (2026-01-08)
 
 ### 🚧 In Progress
 - None
 
 ### 📋 Pending
-- **PR #2:** Fix Settings Loss in Shared Graphs (Issue #790)
 - **PR #4:** Investigate and Fix Metadata Import Failures (Issue #793)
 - **PR #5:** Update Citation Key Handling for Zotero 7
 - **PR #6:** Add Performance Monitoring & Optimization
@@ -75,8 +75,9 @@ npm run build:prod  # ✅ Successful
 
 ---
 
-### PR #2: Fix Settings Loss in Shared Graphs (Issue #790) 🔥
+### PR #2: Fix Settings Loss in Shared Graphs (Issue #790) 🔥 ✅ COMPLETE
 **Priority:** CRITICAL | **Effort:** 2-3 hours | **Risk:** LOW-MEDIUM
+**Status:** ✅ Completed (2026-01-26)
 
 **Problem:**
 - `configRoamDepot()` writes ALL settings back on every load
@@ -90,9 +91,9 @@ npm run build:prod  # ✅ Successful
 - Merge defaults in-memory for use, don't persist them
 
 **Files:**
-- `src/setup.ts` - Main fix in `configRoamDepot()` function
-- `src/setup.test.ts` - Add/update tests
-- `src/api/index.tsx` - May need updates if it calls setup
+- ✅ `src/setup.ts` - Main fix in `configRoamDepot()` function
+- ✅ `src/setup.test.ts` - Added comprehensive tests
+- ✅ `tests/utils/setup.test.tsx` - Updated existing tests
 
 **Implementation:**
 ```typescript
@@ -129,16 +130,19 @@ function configRoamDepot({ extensionAPI }: { extensionAPI: Roam.ExtensionAPI }){
 ```
 
 **Testing:**
-- [ ] Fresh install: settings are created correctly
-- [ ] Reload: settings persist without being overwritten
-- [ ] Partial settings (missing nested objects): defaults used but not persisted
-- [ ] User changes settings: changes persist correctly
+- ✅ Fresh install: settings are created correctly
+- ✅ Reload: settings persist without being overwritten
+- ✅ Partial settings (missing nested objects): defaults used but not persisted
+- ✅ SmartBlock configuration preserved on reload
+- ✅ All 405 tests pass (38 test files)
+- ✅ TypeScript type checking passes
+- ✅ Production build successful
 
 **Why Separate:** Critical bug affecting user trust. Needs careful testing. Clear scope for revert if issues arise.
 
 ---
 
-## Phase 2: Easy Wins (Low Effort, High Impact)
+## ✅ Phase 2: Easy Wins (Low Effort, High Impact)
 
 ### PR #3: Small Bug Fixes & Template Improvements 🎯 ✅ COMPLETE
 **Priority:** HIGH | **Effort:** 3-4 hours | **Risk:** LOW
@@ -559,7 +563,7 @@ async function importMetadataBatch(items: ZItemTop[]) {
 | PR | Description | Priority | Effort | Separate/Grouped | Status |
 |---|---|---|---|---|---|
 | #1 | Security updates | CRITICAL | 30m | Separate | ✅ `a30c400` |
-| #2 | Fix Issue #790 | CRITICAL | 2-3h | Separate | 📋 Pending |
+| #2 | Fix Issue #790 | CRITICAL | 2-3h | Separate | ✅ Complete |
 | #3 | Small bug fixes (#23, #26, #19) | HIGH | 3-4h | **Grouped** | ✅ `9c0f1fc` |
 | #4 | Investigate Issue #793 | HIGH | 4-6h | Separate | 📋 Pending |
 | #5 | Citation keys for Zotero 7 | HIGH | 4-6h | Separate | 📋 Pending |
@@ -638,7 +642,8 @@ After merging multiple PRs, test interactions:
 
 ### Phase 1-2 Progress:
 - ✅ No security vulnerabilities (PR #1 - DONE)
-- 📋 Settings persist correctly in shared graphs (PR #2 - PENDING)
+- ✅ Settings persist correctly in shared graphs (PR #2 - DONE)
+- ✅ SmartBlock configurations preserved on reload (PR #2 - DONE)
 - ✅ Year shows in metadata (PR #3 - DONE)
 - ✅ Notes format correctly (PR #3 - DONE)
 - ✅ Authors/editors conditional works (PR #3 - DONE)

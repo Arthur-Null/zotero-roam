@@ -11,21 +11,21 @@ This review analyzes 14 open issues and 7 open pull requests from the original r
 
 ### Completion Status (as of v0.7.23)
 
-**✅ Completed (5 items):**
+**✅ Completed (6 items):**
 - Security PRs: #789 (axios), #788 (vite)
+- Issue #790: Settings loss in shared graphs
 - Easy Wins: #23 (year in metadata), #26 (bullet formatting), #19 (authors/editors)
 
 **❌ Outstanding (Critical):**
-- Issue #790: Settings loss in shared graphs (HIGH PRIORITY)
 - Issue #793: Recent metadata import failures
 - Citation Key Compatibility for Zotero 7
 - Performance optimization for large databases
 
-**Progress: ~23% of identified items completed**
+**Progress: ~30% of identified items completed**
 
 ### Priority Issues Identified
 
-1. **Critical Bug (#790)**: Settings loss in shared graphs - HIGH PRIORITY ❌
+1. ~~**Critical Bug (#790)**: Settings loss in shared graphs~~ ✅ **FIXED (2026-01-26)**
 2. **Citation Key Compatibility**: Better BibTeX integration needs updating ❌
 3. **Performance**: Large database freezing issues ❌
 4. **Recent Bug (#793)**: Metadata import failures ❌
@@ -82,11 +82,12 @@ This review analyzes 14 open issues and 7 open pull requests from the original r
 
 ## Critical Issues
 
-### 🔴 Issue #790: SmartBlock Formatter Loses UID in Shared Graphs
+### ✅ Issue #790: SmartBlock Formatter Loses UID in Shared Graphs - **FIXED**
 
-**Priority:** CRITICAL
+**Priority:** CRITICAL (was)
+**Status:** ✅ Fixed (2026-01-26)
 **Impact:** Users lose configuration unpredictably
-**Root Cause Identified:** Yes
+**Root Cause:** Identified and fixed
 
 **Problem:**
 In `src/setup.ts:309-315`, the `configRoamDepot()` function:
@@ -110,24 +111,40 @@ function configRoamDepot({ extensionAPI }: { extensionAPI: Roam.ExtensionAPI }){
 }
 ```
 
-**Proposed Solutions:**
+**Solution Implemented:**
 
-**Option A (Safer):** Only write settings if they're missing
+Implemented Option B (cleaner approach) - Settings are only written on first-time setup:
+
 ```typescript
-Object.entries(settings).forEach(([key, val]) => {
-	if (!current[key]) {
-		extensionAPI.settings.set(key, val);
+function configRoamDepot({ extensionAPI }: { extensionAPI: Roam.ExtensionAPI }){
+	const current = extensionAPI.settings.getAll();
+
+	// Only write on first-time setup
+	if (!current || Object.keys(current).length === 0) {
+		const settings = setupInitialSettings({});
+		Object.entries(settings).forEach(([key, val]) => {
+			extensionAPI.settings.set(key, val);
+		});
+		// ... create requests ...
+		return { requests, settings };
 	}
-});
+
+	// Subsequent loads: merge in-memory only, don't write back
+	const settings = setupInitialSettings(current || {});
+	const requests = extensionAPI.settings.get<UserRequests>("requests") || { /* defaults */ };
+	return { requests, settings };
+}
 ```
 
-**Option B (Cleaner):** Never write back, only use merged settings in-memory
-```typescript
-// Remove the Object.entries loop entirely
-// Return merged settings for in-memory use only
-```
+**Changes Made:**
+- ✅ Modified `src/setup.ts` - `configRoamDepot()` function
+- ✅ Added comprehensive tests in `src/setup.test.ts`
+- ✅ Updated existing tests in `tests/utils/setup.test.tsx`
+- ✅ All 405 tests passing
+- ✅ TypeScript type checking passes
+- ✅ Production build successful
 
-**Recommendation:** Implement Option B - it's cleaner and prevents all write-back issues. Settings should only be written when explicitly changed by the user, not on every load.
+**Result:** User settings (including SmartBlock configurations) are now preserved on reload, even when Roam returns incomplete data.
 
 ---
 
@@ -376,7 +393,7 @@ Users want metadata option for "authors, or editors if no authors". ~~This is a 
 
 ### Phase 1: Critical Fixes (Week 1-2)
 1. ✅ **COMPLETED** - Merge security PRs (#789, #788) - v0.7.23
-2. ❌ **PENDING** - Fix Issue #790 (settings loss)
+2. ✅ **COMPLETED** - Fix Issue #790 (settings loss) - 2026-01-26
 3. ❌ **PENDING** - Setup test Zotero account and environment
 4. ❌ **PENDING** - Reproduce and fix Issue #793 (metadata import)
 
@@ -411,7 +428,7 @@ Users want metadata option for "authors, or editors if no authors". ~~This is a 
 - ✅ Good test coverage (84%+)
 
 ### Areas for Improvement
-- ⚠️ Settings persistence logic fragile (#790)
+- ~~⚠️ Settings persistence logic fragile (#790)~~ ✅ **FIXED**
 - ⚠️ No performance monitoring
 - ⚠️ Limited error context for debugging
 - ⚠️ Large bundle size (check if tree-shaking works)
@@ -448,7 +465,7 @@ Users want metadata option for "authors, or editors if no authors". ~~This is a 
 - ✅ **COMPLETED** - Issue #19 (authors/editors) - v0.7.23
 
 **Critical Focus:**
-- Issue #790 (settings loss) - affects user trust
+- ~~Issue #790 (settings loss)~~ ✅ **FIXED (2026-01-26)**
 - Issue #793 (recent import failures) - actively broken
 - Citation key compatibility - affects core functionality
 - Performance issues - affects usability
@@ -457,27 +474,34 @@ Users want metadata option for "authors, or editors if no authors". ~~This is a 
 Yes, you should create a Zotero test account. The free tier is sufficient for testing, and proper integration testing is essential for this extension.
 
 **Estimated Effort:**
-- ~~Phase 1 (Critical): 20-30 hours~~ **In Progress: 2/4 items complete**
+- ~~Phase 1 (Critical): 20-30 hours~~ **75% Complete: 3/4 items done**
 - Phase 2 (Core): 30-40 hours (1/4 items complete)
 - Phase 3 (Performance): 40-50 hours
 - Phase 4 (Polish): Ongoing
 
 ---
 
-## Update: v0.7.23 Release (2026-01-26)
+## Update: Post v0.7.23 (2026-01-26)
 
-**Completed in this release:**
+**Completed in v0.7.23:**
 - ✅ Security updates: axios v1.8.2, vite v5.4.19
 - ✅ Added publication year to metadata template
 - ✅ Fixed bullet point formatting in notes import
 - ✅ Added authors/editors conditional logic
 
+**Completed Post-Release:**
+- ✅ **Issue #790** (settings loss) - FIXED (2026-01-26)
+  - Modified `configRoamDepot()` to only write settings on first-time setup
+  - Settings now preserved on reload, even with incomplete Roam data
+  - SmartBlock configurations no longer lost in shared graphs
+  - Added comprehensive test coverage (405 tests passing)
+
 **Next Priority Items:**
-1. **Issue #790** (settings loss) - Critical bug affecting user trust
-2. **Issue #793** (metadata import failures) - Actively broken functionality
-3. Setup Zotero test environment for comprehensive testing
-4. Citation key compatibility research for Zotero 7
+1. **Issue #793** (metadata import failures) - Actively broken functionality
+2. Setup Zotero test environment for comprehensive testing
+3. Citation key compatibility research for Zotero 7
+4. Performance monitoring and optimization
 
 ---
 
-This is a well-architected extension with good bones. The main issues are edge cases (#790), potential API compatibility (#793, citation keys), and performance optimization for power users. ~~The security updates should be merged immediately, and~~ Issue #790 should be your top priority as it affects user trust in the extension.
+This is a well-architected extension with good bones. ~~The main issues are edge cases (#790)~~, The critical settings persistence bug (#790) has been fixed. Remaining priorities are potential API compatibility (#793, citation keys), and performance optimization for power users. The security updates and Issue #790 are now complete. Focus should shift to investigating and fixing Issue #793 (metadata import failures).

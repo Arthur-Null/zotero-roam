@@ -303,26 +303,39 @@ export function setupInitialSettings(settingsObject: Partial<UserSettings>): Use
 	};
 }
 
-/** Initializes the extension, from a Roam Depot install 
+/** Initializes the extension, from a Roam Depot install
  * @returns The user's setup configuration
  */
 function configRoamDepot({ extensionAPI }: { extensionAPI: Roam.ExtensionAPI }){
 	const current = extensionAPI.settings.getAll();
-	const settings = setupInitialSettings(current || {});
 
-	Object.entries(settings).forEach(([key, val]) => {
-		extensionAPI.settings.set(key, val);
-	});
+	// Only write on first-time setup (when settings are empty or don't exist)
+	// This prevents overwriting user settings with defaults on every reload
+	if (!current || Object.keys(current).length === 0) {
+		// First-time setup: create and persist all settings
+		const settings = setupInitialSettings({});
+		Object.entries(settings).forEach(([key, val]) => {
+			extensionAPI.settings.set(key, val);
+		});
 
-	let requests = extensionAPI.settings.get<UserRequests>("requests");
-	if(!requests){
-		requests = {
+		const requests: UserRequests = {
 			dataRequests: [],
 			apiKeys: [],
 			libraries: []
 		};
 		extensionAPI.settings.set("requests", requests);
+
+		return { requests, settings };
 	}
+
+	// Subsequent loads: merge defaults in-memory only, don't write back
+	// This preserves user settings even if Roam returns incomplete data
+	const settings = setupInitialSettings(current || {});
+	const requests = extensionAPI.settings.get<UserRequests>("requests") || {
+		dataRequests: [],
+		apiKeys: [],
+		libraries: []
+	};
 
 	return {
 		requests,

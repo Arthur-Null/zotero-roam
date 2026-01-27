@@ -389,6 +389,7 @@ describe("Initial configuration", () => {
 	test("Roam Depot - no requests set", () => {
 		const mockExtensionAPI = mock<Roam.ExtensionAPI>({
 			settings: {
+				getAll: vi.fn(() => ({} as Record<string, unknown>)), // First-time setup (empty object)
 				get: vi.fn((_key: string) => undefined),
 				set: vi.fn((_key, _val) => { })
 			}
@@ -416,6 +417,11 @@ describe("Initial configuration", () => {
 
 		const mockExtensionAPI = mock<Roam.ExtensionAPI>({
 			settings: {
+				getAll: vi.fn(() => {
+					// Return non-empty object to indicate settings already exist
+					// This simulates a subsequent load (not first-time setup)
+					return { requests } as any;
+				}),
 				get: vi.fn((key: string) => {
 					if (key == "requests") {
 						return requests as any;
