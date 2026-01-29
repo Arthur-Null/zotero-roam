@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { memo, useCallback, useEffect, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import Tribute, { TributeCollection } from "tributejs";
 
 import { useAutocompleteSettings, useRequestsSettings } from "Components/UserSettings";
@@ -102,6 +102,10 @@ const Autocomplete = memo(function Autocomplete() {
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const formattedLib = useGetItems(dataRequests, format_as, display_as) || [];
 
+	// Track current Tribute instance for proper cleanup
+	const tributeRef = useRef<Tribute<Option> | null>(null);
+	const currentTextAreaRef = useRef<Element | null>(null);
+
 	const tributeFactory = useMemo<TributeCollection<Option>>(() => {
 		return {
 			trigger,
@@ -117,6 +121,17 @@ const Autocomplete = memo(function Autocomplete() {
 		const textArea = document.querySelector("textarea.rm-block-input");
 		if (!textArea || textArea.getAttribute("zotero-tribute") != null) {return;}
 
+		// Clean up previous Tribute instance if it exists and is attached to a different element
+		if (tributeRef.current && currentTextAreaRef.current && currentTextAreaRef.current !== textArea) {
+			try {
+				tributeRef.current.detach(currentTextAreaRef.current);
+			} catch(e) {
+				// Element may no longer exist in DOM
+			}
+			tributeRef.current = null;
+			currentTextAreaRef.current = null;
+		}
+
 		document.querySelectorAll(`.${CustomClasses.TRIBUTE}`).forEach(d => d.remove());
 
 		textArea.setAttribute("zotero-tribute", "active");
@@ -125,6 +140,10 @@ const Autocomplete = memo(function Autocomplete() {
 
 		const tribute = new Tribute(tributeFactory);
 		tribute.attach(textArea);
+
+		// Store references for cleanup
+		tributeRef.current = tribute;
+		currentTextAreaRef.current = textArea;
 
 		textArea.addEventListener("tribute-replaced", (e: CustomEvent<TributeJS.Events.TributeReplaced>) => {
 			const item = e.detail.item;
@@ -143,7 +162,7 @@ const Autocomplete = memo(function Autocomplete() {
 				setValue!.call(textArea, newText);
 
 				const ev = new Event("input", { bubbles: true });
-				textArea.dispatchEvent(ev); 
+				textArea.dispatchEvent(ev);
 			}
 		});
 	}, [tributeFactory]);
@@ -154,7 +173,17 @@ const Autocomplete = memo(function Autocomplete() {
 
 		return () => {
 			editingObserver.disconnect();
-			try { document.querySelector(`.${CustomClasses.TRIBUTE}`)!.remove(); } 
+			// Clean up Tribute instance on unmount
+			if (tributeRef.current && currentTextAreaRef.current) {
+				try {
+					tributeRef.current.detach(currentTextAreaRef.current);
+				} catch(e) {
+					// Element may no longer exist in DOM
+				}
+				tributeRef.current = null;
+				currentTextAreaRef.current = null;
+			}
+			try { document.querySelector(`.${CustomClasses.TRIBUTE}`)!.remove(); }
 			catch(e){
 				// Do nothing
 			}

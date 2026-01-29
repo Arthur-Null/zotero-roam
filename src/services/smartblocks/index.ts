@@ -166,6 +166,9 @@ const sbCommands = () => {
 };
 
 
+// Store reference to the event listener for cleanup
+let smartblocksLoadedHandler: (() => void) | null = null;
+
 /* istanbul ignore next */
 /** Register the extension's custom SmartBlocks commands, if the SmartBlocks extension is loaded in the user's Roam graph
  * @see https://roamjs.com/extensions/smartblocks/developer_docs
@@ -197,11 +200,18 @@ function registerSmartblockCommands(){
 				});
 			});
 		}
+		// Remove the event listener after registration to prevent accumulation
+		if (smartblocksLoadedHandler) {
+			document.body.removeEventListener("roamjs:smartblocks:loaded", smartblocksLoadedHandler);
+			smartblocksLoadedHandler = null;
+		}
 	};
 
 	if (window.roamjs?.loaded?.has("smartblocks")) {
 		register();
 	} else {
+		// Store reference for cleanup
+		smartblocksLoadedHandler = register;
 		document.body.addEventListener("roamjs:smartblocks:loaded", register);
 	}
 }
