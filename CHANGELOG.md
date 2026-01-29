@@ -1,5 +1,17 @@
 ## Changelog
 
+### [0.7.25](https://github.com/8bitgentleman/zotero-roam/compare/0.7.24...0.7.25) - 2026-01-29
+
+#### Bug Fixes
+
+- prevent memory leaks causing app unresponsiveness on Apple Silicon Macs
+  - Limited Logger.logs array to 1000 entries with FIFO rotation
+  - Changed React Query cacheTime from Infinity to 30 minutes
+  - Fixed SmartBlocks event listener cleanup
+  - Fixed Tribute autocomplete instance cleanup
+- downgrade jsdom to 26.0.0 to resolve ES module compatibility issues in test environment
+- make Chromatic and Codecov CI steps conditional on secrets being available
+
 ### [0.7.24](https://github.com/alixlahuec/zotero-roam/compare/0.7.23...0.7.24) - 2026-01-26
 
 #### Features
