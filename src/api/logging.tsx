@@ -64,11 +64,23 @@ export class ZoteroRoamLog {
 	}
 }
 
+// Maximum number of log entries to retain (prevents unbounded memory growth)
+const MAX_LOG_ENTRIES = 1000;
+
 export class Logger {
 	logs: ZoteroRoamLog[] = [];
 
 	send(obj: LogConfig, level: LogLevel = "info") {
 		this.logs.push(new ZoteroRoamLog(obj, level));
+		// Trim logs to prevent unbounded memory growth
+		if (this.logs.length > MAX_LOG_ENTRIES) {
+			this.logs = this.logs.slice(-MAX_LOG_ENTRIES);
+		}
+	}
+
+	/** Clears all log entries */
+	clearLogs() {
+		this.logs = [];
 	}
 
 	error(obj: LogConfig) {

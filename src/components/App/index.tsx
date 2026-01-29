@@ -35,10 +35,14 @@ const useExtensionContext = () => {
 	return context;
 };
 
+// Cache time of 30 minutes prevents unbounded memory growth while maintaining
+// good performance for typical usage sessions
+const CACHE_TIME_MS = 1000 * 60 * 30;
+
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			cacheTime: Infinity,
+			cacheTime: CACHE_TIME_MS,
 			refetchOnWindowFocus: false,
 			refetchOnMount: false,
 			refetchIntervalInBackground: true,
