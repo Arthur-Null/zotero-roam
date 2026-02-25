@@ -21,13 +21,21 @@ const { path: userPath } = userLibrary;
 
 test("Extracting citekeys for Zotero items", () => {
 	const cases = [
+		// Legacy: citekey in extra field (pre-Zotero 8 / BBT style)
 		{ key: "ABCD1234", data: { extra: "Citation Key: someCitekey1994" } },
-		{ key: "PQRST789", data: { extra: "" } }
+		// No citekey at all
+		{ key: "PQRST789", data: { extra: "" } },
+		// Zotero 8 native citationKey field
+		{ key: "WXYZ5678", data: { citationKey: "nativeCitekey2024" } },
+		// Both citationKey and extra set: citationKey takes priority
+		{ key: "EFGH2345", data: { citationKey: "nativePriority2024", extra: "Citation Key: legacyCitekey1999" } }
 	];
 
 	const expectations = [
 		{ key: "someCitekey1994", data: { extra: "Citation Key: someCitekey1994" }, has_citekey: true },
-		{ key: "PQRST789", data: { extra: "" }, has_citekey: false }
+		{ key: "PQRST789", data: { extra: "" }, has_citekey: false },
+		{ key: "nativeCitekey2024", data: { citationKey: "nativeCitekey2024" }, has_citekey: true },
+		{ key: "nativePriority2024", data: { citationKey: "nativePriority2024", extra: "Citation Key: legacyCitekey1999" }, has_citekey: true }
 	];
 
 	expect(extractCitekeys(cases)).toEqual(expectations);

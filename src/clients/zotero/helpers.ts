@@ -71,13 +71,16 @@ type WithHasCitekey<T> = T & { has_citekey: boolean };
  * @param arr - The items to scan
  * @returns The processed dataset : each item gains a `has_citekey` property, and its `key` property is assigned its citekey 
  */
-function extractCitekeys<T extends { key: string, data: { extra?: string } }>(arr: T[]): WithHasCitekey<T>[] {
+function extractCitekeys<T extends { key: string, data: { extra?: string, citationKey?: string } }>(arr: T[]): WithHasCitekey<T>[] {
 	const itemList = [...arr];
 	return itemList.map(item => {
 		let { key } = item;
 		let has_citekey = false;
 
-		if (typeof (item.data.extra) !== "undefined") {
+		if (item.data.citationKey) {
+			key = item.data.citationKey;
+			has_citekey = true;
+		} else if (typeof (item.data.extra) !== "undefined") {
 			if (item.data.extra.includes("Citation Key: ")) {
 				key = item.data.extra.match("Citation Key: (.+)")?.[1] || key;
 				has_citekey = true;
@@ -127,7 +130,7 @@ function makeTagMap(tags: ZoteroAPI.Tag[]) {
 
 /** Merges two datasets. As the match is done on the `data.key` property, both items and collections can be matched. For items, citekeys are extracted.
  */
-function matchWithCurrentData<T extends { data: { key: string, extra?: string }, key: string }>(
+function matchWithCurrentData<T extends { data: { key: string, extra?: string, citationKey?: string }, key: string }>(
 	update: { modified?: T[], deleted?: string[] },
 	arr: T[] = [],
 	{ with_citekey = false } = {}
